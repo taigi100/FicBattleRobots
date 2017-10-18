@@ -187,17 +187,17 @@ int main(int argc, char* argv[])
 	//Matrix to store each frame of the webcam feed
 	Mat cameraFeed;
 	//matrix storage for HSV image
-	Mat HSV;
+	Mat HSV, HSV2;
 	//matrix storage for binary threshold image
-	Mat threshold;
+	Mat threshold, threshold2;
 	//x and y values for the location of the object
-	int x = 0, y = 0;
+	int x = 0, y = 0, x2 = 0, y2= 0;
 	//create slider bars for HSV filtering
-	createTrackbars();
+	// createTrackbars();
 	//video capture object to acquire webcam feed
 	VideoCapture capture;
 	//open capture object at location zero (default location for webcam)
-	capture.open(0);
+	capture.open("rtmp://172.16.254.99/live/nimic");
 	//set height and width of capture frame
 	capture.set(CV_CAP_PROP_FRAME_WIDTH, FRAME_WIDTH);
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
 
 
 
-	
+
 	while (1) {
 
 
@@ -216,16 +216,23 @@ int main(int argc, char* argv[])
 		cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
 		//filter HSV image between values and store filtered image to
 		//threshold matrix
-		inRange(HSV, Scalar(H_MIN, S_MIN, V_MIN), Scalar(H_MAX, S_MAX, V_MAX), threshold);
+		inRange(HSV, Scalar(24, 126, 137), Scalar(76, 240, 256), threshold);
+		//inRange(HSV, Scalar(109, 48, 117), Scalar(192, 240, 256), threshold2);
 		//perform morphological operations on thresholded image to eliminate noise
 		//and emphasize the filtered object(s)
-		if (useMorphOps)
+		if (useMorphOps) {
 			morphOps(threshold);
+			//morphOps(threshold2);
+		}
 		//pass in thresholded frame to our object tracking function
 		//this function will return the x and y coordinates of the
 		//filtered object
-		if (trackObjects)
+		if (trackObjects) {
 			trackFilteredObject(x, y, threshold, cameraFeed);
+
+			inRange(HSV, Scalar(109, 48, 117), Scalar(192, 240, 256), threshold);
+			trackFilteredObject(x2, y2, threshold, cameraFeed);
+		}
 
 		//show frames
 		imshow(windowName2, threshold);
@@ -239,4 +246,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-

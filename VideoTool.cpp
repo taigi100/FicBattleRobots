@@ -182,6 +182,7 @@ int main(int argc, char* argv[])
 	//program
 	bool trackObjects = true;
 	bool useMorphOps = true;
+	int cnt = 0;
 
 	Point p;
 	//Matrix to store each frame of the webcam feed
@@ -209,31 +210,27 @@ int main(int argc, char* argv[])
 
 	while (1) {
 
-
+		++cnt;
 		//store image to matrix
 		capture.read(cameraFeed);
 		//convert frame from BGR to HSV colorspace
 		cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
 		//filter HSV image between values and store filtered image to
 		//threshold matrix
-		inRange(HSV, Scalar(24, 126, 137), Scalar(76, 240, 256), threshold);
-		//inRange(HSV, Scalar(109, 48, 117), Scalar(192, 240, 256), threshold2);
+		if (cnt % 2)
+			inRange(HSV, Scalar(24, 126, 137), Scalar(76, 240, 256), threshold);
+		else
+		inRange(HSV, Scalar(109, 48, 117), Scalar(192, 240, 256), threshold);
 		//perform morphological operations on thresholded image to eliminate noise
 		//and emphasize the filtered object(s)
-		if (useMorphOps) {
+		if (useMorphOps)
 			morphOps(threshold);
-			//morphOps(threshold2);
-		}
+
 		//pass in thresholded frame to our object tracking function
 		//this function will return the x and y coordinates of the
 		//filtered object
-		if (trackObjects) {
+		if (trackObjects)
 			trackFilteredObject(x, y, threshold, cameraFeed);
-
-			inRange(HSV, Scalar(109, 48, 117), Scalar(192, 240, 256), threshold);
-			trackFilteredObject(x2, y2, threshold, cameraFeed);
-		}
-
 		//show frames
 		imshow(windowName2, threshold);
 		imshow(windowName, cameraFeed);

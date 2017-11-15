@@ -1,6 +1,11 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 //#include <opencv2\highgui.h>
 #include "opencv2/highgui/highgui.hpp"
 //#include <opencv2\cv.h>
@@ -174,7 +179,7 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 	}
 }
 
-void transmiteComenzi(char *comenzi, int sockfd){
+int transmiteComenzi(char *comenzi, int sockfd){
 	int i,j=0;
 	char nou[20], msg[20];
 	for(i=0;i<strlen(comenzi);i++){
@@ -190,11 +195,11 @@ void transmiteComenzi(char *comenzi, int sockfd){
             		puts("Send failed");
             		return 1;
         	}
-		sleep(1);
+		usleep(1);
 	}
 }
 
-void createSocket(int &sockfd, sockaddr_in &serv_addr) {
+int createSocket(int &sockfd, sockaddr_in &serv_addr) {
 	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 			printf("\n Error : Could not create socket \n");
@@ -225,11 +230,11 @@ int main(int argc, char* argv[])
 	int sockfd = 0;
 	sockaddr_in serv_addr;
 
-	createSocket(&sockfd, &serv_addr);
+	createSocket(sockfd, serv_addr);
 	transmiteComenzi(argv[1], sockfd);
 	//some boolean variables for different functionality within this
 	//program
-	bool trackObjects = true;
+	/*bool trackObjects = true;
 	bool useMorphOps = true;
 	int cnt = 0;
 
@@ -289,6 +294,6 @@ int main(int argc, char* argv[])
 		//image will not appear without this waitKey() command
 		waitKey(30);
 	}
-
+*/
 	return 0;
 }

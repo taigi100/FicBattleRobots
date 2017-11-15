@@ -122,10 +122,8 @@ void morphOps(Mat &thresh) {
 
 	dilate(thresh, thresh, dilateElement);
 	dilate(thresh, thresh, dilateElement);
-
-
-
 }
+
 void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 
 	Mat temp;
@@ -175,9 +173,60 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 		else putText(cameraFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
 	}
 }
+
+void transmiteComenzi(char *comenzi, int sockfd){
+	int i,j=0;
+	char nou[20], msg[20];
+	for(i=0;i<strlen(comenzi);i++){
+		if(strchr("fslrb", comenzi[i])!=NULL){
+			nou[j]=comenzi[i];
+			j++;
+		}
+	}
+	for(i=0;i<j;i++){
+		sprintf(msg, "%c", nou[i]);
+		if( send(sockfd , msg , strlen(msg) , 0) < 0)
+        	{
+            		puts("Send failed");
+            		return 1;
+        	}
+		sleep(1);
+	}
+}
+
+void createSocket(int &sockfd, sockaddr_in &serv_addr) {
+	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	{
+			printf("\n Error : Could not create socket \n");
+			return 1;
+	}
+
+	memset(&serv_addr, '0', sizeof(serv_addr));
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(20236);
+
+	if(inet_pton(AF_INET, "193.226.12.217", &serv_addr.sin_addr)<=0)
+	{
+			printf("\n inet_pton error occured\n");
+			return 1;
+	}
+
+	if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+	{
+		 printf("\n Error : Connect Failed \n");
+		 return 1;
+	}
+}
+
+
 int main(int argc, char* argv[])
 {
+	int sockfd = 0;
+	sockaddr_in serv_addr;
 
+	createSocket(&sockfd, &serv_addr);
+	transmiteComenzi(argv[1], sockfd);
 	//some boolean variables for different functionality within this
 	//program
 	bool trackObjects = true;

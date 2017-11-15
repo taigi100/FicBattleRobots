@@ -178,28 +178,35 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 		else putText(cameraFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
 	}
 }
+//stay on place, see when he leaves(timeout x) -> bash him in his side
+//bruteforce? :))
+// findPositions -> compute Action -> Send action -> repeat
 
-int transmiteComenzi(char *comenzi, int sockfd){
-	int i,j=0;
-	char nou[20], msg[20];
-	for(i=0;i<strlen(comenzi);i++){
-		if(strchr("fslrb", comenzi[i])!=NULL){
-			nou[j]=comenzi[i];
-			j++;
-		}
-	}
-	for(i=0;i<j;i++){
-		sprintf(msg, "%c", nou[i]);
-		if( send(sockfd , msg , strlen(msg) , 0) < 0)
-        	{
-            		puts("Send failed");
-            		return 1;
-        	}
-		usleep(1);
-	}
+struct position {
+	float x;
+	float y;
 }
 
-int createSocket(int &sockfd, sockaddr_in &serv_addr) {
+int findPositions(position &me, position &other, char otherAction) { // based on old position compute his current action.
+		// copiezi chestia currenta din main.
+}
+
+char* computeAction(position me, position other, char otherAction) {
+	return "fs";
+}
+
+int sendAction(int sockfd, char* action) {
+	int i;
+	for (i = 0; i < strlen(action); ++i)
+		if (strchr("fslbr", action[i]))
+			if (send(sockfd, action[i], strlen(char), 0) < 0) {
+				puts("Send failed");
+				return 33;
+			}
+}
+
+int createSocket(int &sockfd) {
+	sockaddr_in serv_addr;
 	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 			printf("\n Error : Could not create socket \n");
@@ -210,14 +217,15 @@ int createSocket(int &sockfd, sockaddr_in &serv_addr) {
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(20236);
-
+	//printf("%d %d", serv_addr.sin_port, &serv_addr.sin_port);
 	if(inet_pton(AF_INET, "193.226.12.217", &serv_addr.sin_addr)<=0)
 	{
 			printf("\n inet_pton error occured\n");
 			return 1;
 	}
 
-	if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+	printf("\n%d %d\n", serv_addr.sin_port, serv_addr.sin_addr.s_addr);
+	if( connect(sockfd, (sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 	{
 		 printf("\n Error : Connect Failed \n");
 		 return 1;
@@ -230,7 +238,7 @@ int main(int argc, char* argv[])
 	int sockfd = 0;
 	sockaddr_in serv_addr;
 
-	createSocket(sockfd, serv_addr);
+	createSocket(sockfd);//, serv_addr);
 	transmiteComenzi(argv[1], sockfd);
 	//some boolean variables for different functionality within this
 	//program
